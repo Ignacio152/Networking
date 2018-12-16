@@ -1,0 +1,10 @@
+#Ignore all txt/s
+*.txt
+
+#ignore unneeded folders
+Pods/
+
+GoogleService-Info.plist
+Podfile
+Podfile.lock
+README.md
