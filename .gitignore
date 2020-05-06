@@ -1,5 +1,4 @@
 #Ignore all txt/s
-*.txt
 
 #ignore unneeded folders
 Pods/
