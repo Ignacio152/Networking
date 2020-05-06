@@ -9,7 +9,7 @@
 import UIKit
 import PlainPing
 
-class TableViewController: UITableViewController{
+class TableViewController: UITableViewController {
     
     var pings = [String]()
     var pinged = [String]()
@@ -24,11 +24,47 @@ class TableViewController: UITableViewController{
     
     func populateArray(){
         var numOfAddresses = 0
+        var cutOffIp = ""
+        var numberOfDots = 0
         
-        while numOfAddresses<255{
-            pings.append("192.168.1.\(numOfAddresses+1)")
-            numOfAddresses+=1
+        let deviceIP = getIPAddress()
+        
+        for (index, char) in deviceIP!.enumerated() {
+            if numberOfDots == 3 {
+                cutOffIp = String((deviceIP?.prefix(index-1))!)
+                break
+            }
+            if char == "." { numberOfDots += 1 }
         }
+        
+        while numOfAddresses < 255{
+            pings.append(cutOffIp + "\(numOfAddresses+1)")
+            numOfAddresses += 1
+        }
+    }
+    
+    func getIPAddress() -> String? {
+        var address: String?
+        var ifaddr: UnsafeMutablePointer<ifaddrs>? = nil
+        if getifaddrs(&ifaddr) == 0 {
+            var ptr = ifaddr
+            while ptr != nil {
+                defer { ptr = ptr?.pointee.ifa_next }
+                
+                let interface = ptr?.pointee
+                let addrFamily = interface?.ifa_addr.pointee.sa_family
+                if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                    
+                    if let name: String = String(cString: (interface?.ifa_name)!), name == "en0" {
+                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                        getnameinfo(interface?.ifa_addr, socklen_t((interface?.ifa_addr.pointee.sa_len)!), &hostname, socklen_t(hostname.count), nil, socklen_t(0), NI_NUMERICHOST)
+                        address = String(cString: hostname)
+                    }
+                }
+            }
+            freeifaddrs(ifaddr)
+        }
+        return address
     }
     
     //MARK:- Ping Function
@@ -62,7 +98,7 @@ class TableViewController: UITableViewController{
             completion()
         }
     }
-
+    
     
     @IBAction func runButtonPressed(_ sender: UIButton) {
         
@@ -74,8 +110,8 @@ class TableViewController: UITableViewController{
         pinged = [String]()
         self.populateArray()
         
-}
-
+    }
+    
     //MARK:- TableViewMethods
     
     override func numberOfSections(in tableView: UITableView) -> Int {
@@ -88,13 +124,13 @@ class TableViewController: UITableViewController{
         
         cell.textLabel?.text = pinged[indexPath.row]
         cell.textLabel?.textColor = UIColor.white
-
+        
         return cell
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return pinged.count
     }
-
-
+    
+    
 }
