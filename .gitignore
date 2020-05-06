@@ -1,13 +1,5 @@
 #Ignore all txt/s
 
-#ignore unneeded folders
-Pods/
-
-GoogleService-Info.plist
-Podfile
-Podfile.lock
-README.md
-
 ### OSX ###
 .DS_Store
 .AppleDouble
